@@ -1,0 +1,8 @@
+This project includes and adapts code from:
+
+- dsh-codex-oauth, Copyright birat-chapagain contributors, MIT License.
+- @earendil-works/pi-ai, Copyright Earendil Works contributors, MIT License.
+- DeepSeek Harness conversion code, Copyright DeepSeek AI, MIT License.
+
+The complete upstream MIT license is included in LICENSE. The vendored pi-ai package
+also retains its package metadata, source maps, and license notices.
