@@ -4,15 +4,16 @@
  * plain Node without a bundler or test hooks.
  */
 
-import { execFile } from 'node:child_process'
+import type { spawnSync as SpawnSync } from 'node:child_process'
+import { closeSync, openSync, readFileSync } from 'node:fs'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { promisify } from 'node:util'
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { FileCredentialStore } from '../src/store.js'
 
-const exec = promisify(execFile)
+vi.unmock('node:child_process')
+const { spawnSync } = process.getBuiltinModule('node:child_process') as { spawnSync: typeof SpawnSync }
 
 let root: string | undefined
 let storePath: string
@@ -27,16 +28,25 @@ afterEach(async () => {
 })
 
 function bin(args: readonly string[]): Promise<{ stdout: string; stderr: string; code: number }> {
-  return exec(process.execPath, [join(process.cwd(), 'lib', 'bin.js'), ...args, '--store', storePath])
-    .then(({ stdout, stderr }) => ({ stdout, stderr, code: 0 }))
-    .catch((error: unknown) => {
-      const failure = error as { code?: number; stdout?: string; stderr?: string }
-      return {
-        stdout: failure.stdout ?? '',
-        stderr: failure.stderr ?? '',
-        code: failure.code ?? 1,
-      }
+  const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('VITEST')))
+  const stdoutPath = join(root!, 'stdout.txt')
+  const stderrPath = join(root!, 'stderr.txt')
+  const stdoutFd = openSync(stdoutPath, 'w')
+  const stderrFd = openSync(stderrPath, 'w')
+  try {
+    const result = spawnSync(process.execPath, [join(process.cwd(), 'lib', 'bin.js'), ...args, '--store', storePath], {
+      env,
+      stdio: ['ignore', stdoutFd, stderrFd],
     })
+    return Promise.resolve({
+      stdout: readFileSync(stdoutPath, 'utf8'),
+      stderr: readFileSync(stderrPath, 'utf8'),
+      code: result.status ?? 1,
+    })
+  } finally {
+    closeSync(stdoutFd)
+    closeSync(stderrFd)
+  }
 }
 
 describe('dsh-openai-subscription bin', () => {

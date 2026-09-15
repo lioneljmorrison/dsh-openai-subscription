@@ -1,6 +1,7 @@
 # dsh-openai-subscription
 
 [![GitHub release](https://img.shields.io/github/v/release/lioneljmorrison/dsh-openai-subscription?style=flat-square)](https://github.com/lioneljmorrison/dsh-openai-subscription/releases/latest)
+[![Tests](https://img.shields.io/github/actions/workflow/status/lioneljmorrison/dsh-openai-subscription/ci.yml?branch=main&style=flat-square&label=tests)](https://github.com/lioneljmorrison/dsh-openai-subscription/actions/workflows/ci.yml)
 [![License](https://img.shields.io/github/license/lioneljmorrison/dsh-openai-subscription?style=flat-square)](LICENSE)
 [![Node.js](https://img.shields.io/badge/node-%5E22.19.0%20%7C%7C%20%3E%3D24.0.0-339933?style=flat-square&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 
