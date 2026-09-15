@@ -36,7 +36,8 @@
     "build": "node node_modules/typescript/bin/tsc -p tsconfig.build.json && node --input-type=module -e \"import { chmodSync } from 'node:fs'; chmodSync('lib/bin.js', 0o755)\"",
     "prepack": "npm run build",
     "typecheck": "node node_modules/typescript/bin/tsc --noEmit",
-    "test": "npm run build && node node_modules/vitest/vitest.mjs run"
+    "test": "npm run build && node node_modules/vitest/vitest.mjs run",
+    "coverage": "npm run build && node node_modules/vitest/vitest.mjs run --coverage"
   },
   "dsh": {
     "bundle": {
@@ -68,6 +69,7 @@
     "@deepseek-ai/dsh-invariants": "0.1.5-rc.1",
     "@deepseek-ai/dsh-llm": "0.1.5-rc.1",
     "@types/node": "22.20.2",
+    "@vitest/coverage-v8": "4.1.11",
     "typescript": "5.9.3",
     "vite": "7.3.6",
     "vitest": "4.1.11"
