@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.2.0] - 2026-09-16
+
 - Use cached WebSocket transport by default to prevent unnecessary reconnection and replay overhead during long sessions.
 - Register the provider as configurable so its models appear in Settings > Models.
 - Add an editor action for opening the provider `settings.yaml` from its Settings > Models card.
