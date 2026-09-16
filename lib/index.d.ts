@@ -13,6 +13,7 @@
 import type { Context } from '@deepseek-ai/cordis';
 import Schema from '@deepseek-ai/schemastery';
 export declare const name = "dsh-openai-subscription";
+export declare const settingsNamespace = "dsh-openai-subscription";
 /** The LLM seam is the one required service; the adapter works in every composition. */
 export declare const inject: string[];
 /** Default maximum interval without a Codex stream event while a read is pending. */
@@ -23,10 +24,9 @@ export interface Config {
     /** Credential store path; defaults to `$DSH_HOME/openai-subscription-oauth.json`. */
     storePath?: string;
     /**
-     * Codex Responses transport. Defaults to `sse`: pi-ai's WebSocket session
-     * reuse keeps a connection open after a one-shot headless turn and the
-     * process never exits; opt into `websocket` (or `websocket-cached`) for
-     * long-lived interactive sessions that benefit from connection reuse.
+     * Codex Responses transport. The cached WebSocket transport is the default:
+     * it reuses the session and sends only the incremental input after the first
+     * request. Use `sse` only when compatibility with a proxy requires it.
      */
     transport: 'sse' | 'websocket' | 'websocket-cached' | 'auto';
     /** Prompt-cache retention preference for session-cached Codex requests. */

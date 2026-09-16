@@ -22,6 +22,7 @@ import { codexCommand } from './command.js'
 import { FileCredentialStore } from './store.js'
 
 export const name = 'dsh-openai-subscription'
+export const settingsNamespace = name
 
 /** The LLM seam is the one required service; the adapter works in every composition. */
 export const inject = ['llm']
@@ -35,10 +36,9 @@ export interface Config {
   /** Credential store path; defaults to `$DSH_HOME/openai-subscription-oauth.json`. */
   storePath?: string
   /**
-   * Codex Responses transport. Defaults to `sse`: pi-ai's WebSocket session
-   * reuse keeps a connection open after a one-shot headless turn and the
-   * process never exits; opt into `websocket` (or `websocket-cached`) for
-   * long-lived interactive sessions that benefit from connection reuse.
+   * Codex Responses transport. The cached WebSocket transport is the default:
+   * it reuses the session and sends only the incremental input after the first
+   * request. Use `sse` only when compatibility with a proxy requires it.
    */
   transport: 'sse' | 'websocket' | 'websocket-cached' | 'auto'
   /** Prompt-cache retention preference for session-cached Codex requests. */
@@ -50,7 +50,7 @@ export interface Config {
 export const Config: Schema<Config> = Schema.object({
   provider: Schema.string().default('codex'),
   storePath: Schema.string(),
-  transport: Schema.union(['sse', 'websocket', 'websocket-cached', 'auto']).default('sse'),
+  transport: Schema.union(['sse', 'websocket', 'websocket-cached', 'auto']).default('websocket-cached'),
   cacheRetention: Schema.union(['none', 'short', 'long']).default('long'),
   streamIdleTimeoutMs: Schema.number()
     .min(Number.MIN_VALUE)
@@ -69,7 +69,25 @@ export function apply(ctx: Context, config: Config): void {
   })
 
   // Registrations are effects: HMR and fiber teardown unwind both.
+  // The configurable directory is what makes this provider appear in
+  // Settings > Models; listModels() alone only powers model selection after
+  // a provider card already exists.
+  const unregisterDirectory = ctx.llm.registerConfigurableProviders([{
+    provider: config.provider,
+    displayName: 'OpenAI Codex',
+    settingsNs: settingsNamespace,
+    settingsPath: [],
+  }])
+  // Keep the directory registration in the same lifecycle as DSH's built-in
+  // LLM providers. The LLM registry owns its removal with the plugin context.
+  void unregisterDirectory
   ctx.effect(() => ctx.llm.registerAdapter([config.provider], adapter))
+  ctx.inject(['settings'], (settingsCtx) => {
+    settingsCtx.get('settings').installSection(ctx, settingsNamespace, Config, config, {
+      setSource: () => {},
+      onChange: () => {},
+    })
+  })
   const commands = ctx.get('commands')
   if (commands !== undefined) {
     ctx.effect(() => commands.register(codexCommand(store)))

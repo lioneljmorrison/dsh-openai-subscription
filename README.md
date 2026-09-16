@@ -25,6 +25,11 @@ selection from the Web model picker.
 This uses an OpenAI product protocol implemented by the official Codex client but not
 documented as a stable third-party API. OpenAI may change it without notice.
 
+Long-running agent sessions use the cached WebSocket transport by default. It keeps a
+session-scoped connection and sends only new input after the initial request, including
+tool results. Set `transport: sse` only for environments where WebSockets are blocked;
+SSE requests rebuild the full conversation context on every agent step.
+
 ## Setup
 
 Clone the repository to a directory of your choice and reference it from a DSH profile
